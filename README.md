@@ -9,7 +9,7 @@ To dependency tag your input file run "make <filename>.output" e.g.
 
 This will create a file named `hindi.output`
 
-See [hindi.input.txt](./hindi-dependency-parser/src/master/hindi.input.txt) and [hindi.dependency.parser.out.txt](./hindi-dependency-parser/src/master/hindi.dependency.parser.out.pdf) for sample input and output files. You can change the entries in Makefile to work with any desired input.
+See [hindi.input.txt](https://bitbucket.org/sivareddyg/hindi-dependency-parser/src/master/hindi.input.txt) and [hindi.dependency.parser.out.txt](https://bitbucket.org/sivareddyg/hindi-dependency-parser/src/master/hindi.dependency.parser.out.pdf) for sample input and output files. You can change the entries in Makefile to work with any desired input.
 
 ## Output format
 
@@ -22,7 +22,7 @@ The output format contains the following columns separated by tab space.
 
 ## Dependency Tagset:
 
-See [dep-tagset.pdf](./hindi-dependency-parser/src/master/dep-tagset.pdf) for the dependency tagset details. The tagset is briefly described in [1].
+See [dep-tagset.pdf](https://bitbucket.org/sivareddyg/hindi-dependency-parser/src/master/dep-tagset.pdf) for the dependency tagset details. The tagset is briefly described in [1].
 
 ## Description: 
 
