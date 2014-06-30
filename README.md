@@ -22,18 +22,18 @@ The output format contains the following columns separated by tab space.
 
 ## Dependency Tagset:
 
-See [dep-tagset.pdf](./hindi-dependency-parser/src/master/dep-tagset.pdf) for the dependency tagset details. The tagset is briefly described by [1].
+See [dep-tagset.pdf](./hindi-dependency-parser/src/master/dep-tagset.pdf) for the dependency tagset details. The tagset is briefly described in [1].
 
-## Descritpion: 
+## Description: 
 
-We train and test Malt Dependency Parser [2] on Hindi ICON 2010 shared task data [3]. We use the features word, lemma and postag (for postposition tags we lexicalise the tag by appending the word to the tag). You can build a better parser using other features such as morphological information, which we do not do here.
+We train and test Malt Dependency Parser [2] on Hindi ICON 2010 shared task data [3]. We use the features word, lemma and postag (for postposition tags we lexicalize the tag by appending the word to the tag). You can build a better parser using other features such as morphological information, which we do not do here.
 
 
 ```
 Parser Accuracy: (Parser trained on features word, lemma and postag)
 
-  Labeled   attachment score: 4948 / 6588 * 100 = 75.11 %
-  Unlabeled attachment score: 5555 / 6588 * 100 = 84.32 %
+  Labelled   attachment score: 4948 / 6588 * 100 = 75.11 %
+  Unlabelled attachment score: 5555 / 6588 * 100 = 84.32 %
   Label accuracy score:       5199 / 6588 * 100 = 78.92 %
 
 ```
