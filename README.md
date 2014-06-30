@@ -60,7 +60,7 @@ eragani@gmail.com
 
 ## Acknowledgements:
 
-We would like to thank Bharat Ram Ambati (http://sites.google.com/site/bharatambati) for providing useful suggestions while designing the parser. 
+[Bharat Ram Ambati](http://sites.google.com/site/bharatambati)
 
 ## References
 
