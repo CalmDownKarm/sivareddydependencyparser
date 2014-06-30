@@ -46,7 +46,7 @@ Please cite http://sivareddy.in/downloads wherever required.
 
 ## License:
 
-Free to use for research purpose. You have to get a license from LTRC IIIT Hyderabad <http://ltrc.iiit.ac.in> for commercial purposes. Please contact us for additional details.
+Free to use for research purpose. You have to get a license from [LTRC IIIT Hyderabad] (http://ltrc.iiit.ac.in) for commercial purposes. Please contact us for additional details.
 
 
 ## Contributors:
