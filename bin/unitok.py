@@ -312,17 +312,19 @@ def tokenise(text, lsd=LanguageSpecificData(), glue=GLUE_TAG):
 
     # replace &lt; &gt; and &quot;
     # (cannot be replaced earlier as it would harm SGML tags)
-    tmp_tokens = []
-    for t in tokens:
-        if not SGML_TAG_RE.match(t):
-            tmp_tokens.append(replace_html_entities(t, exceptions=[]))
-        else:
-            tmp_tokens.append(t)
-    tokens = tmp_tokens
+    # tmp_tokens = []
+    tokens = [replace_html_entities(t, []) if not SGML_TAG_RE.match(t) else t for t in tokens]
+    # for t in tokens:
+    #     if not SGML_TAG_RE.match(t):
+    #         tmp_tokens.append(replace_html_entities(t, exceptions=[]))
+    #     else:
+    #         tmp_tokens.append(t)
+    # tokens = tmp_tokens
 
     # replace newlines with spaces
-    comp = re.compile("[\r\n]")
-    tokens = [comp.sub(" ", t) for t in tokens]
+    # comp = re.compile("[\r\n]")
+    tokens = [' '.join(t.split('\n')) for t in tokens]
+    # tokens = [comp.sub(" ", t) for t in tokens]
 
     glued_tokens = []
     should_add_glue = False

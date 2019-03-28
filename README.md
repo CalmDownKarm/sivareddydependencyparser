@@ -69,3 +69,17 @@ eragani@gmail.com
 [2] Nivre, Joakim, Johan Hall, and Jens Nilsson. "Maltparser: A data-driven parser-generator for dependency parsing." Proceedings of LREC. Vol. 6. 2006.
 
 [3] Husain, Samar, Prashanth Mannem, Bharat Ram Ambati, and Phani Gadde. "The ICON-2010 tools contest on Indian language dependency parsing." Proceedings of ICON-2010 Tools Contest on Indian Language Dependency Parsing, ICON 10 (2010): 1-8.
+
+## Notes
+
+requires openjdk8 
+also tested on 1.8.0_444
+openjdk version "1.8.0_212"
+OpenJDK Runtime Environment (build 1.8.0_212-8u212-b01-1~deb9u1-b01)
+OpenJDK 64-Bit Server VM (build 25.212-b01, mixed mode)
+
+
+python 2 currently. 
+eventually will use 2to3 and extract this to a library so it doesn't kill your memory piece by piece. 
+
+
