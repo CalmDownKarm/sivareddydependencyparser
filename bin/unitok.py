@@ -16,7 +16,7 @@ http://jrgraphix.net/r/Unicode/
 
 (c) 2009 Jan Pomikalek <jan.pomikalek@gmail.com>
 """
-
+from gramex.debug import lineprofile
 import re
 
 # regular expressions
@@ -29,7 +29,7 @@ SGML_TAG = ur"""
     (?:                         # Attributes
         [^>'"]*                 # - attribute name (+whitespace +equal sign)
         (?:'[^']*'|"[^"]*")     # - attribute value
-    )* 
+    )*
     \s*                         # Spaces at the end
     /?                          # Forward slash at the end of singleton tags
     \s*                         # More spaces at the end
@@ -111,9 +111,9 @@ URL = ur"""
         |
         """ + IP_ADDRESS +"""
     )
-    
+
     # Port specification (optional)
-    (?::[0-9]+)?      
+    (?::[0-9]+)?
 
     # Scheme specific extension (optional)
     (?:/[-\w;/?:@=&\$_.+!*'(~#%,]*)?
@@ -178,7 +178,7 @@ PHONE_NUMBER_RE = re.compile(PHONE_NUMBER, re.UNICODE)
 
 NUMBER_INTEGER_PART = ur"""
     (?:
-        0           
+        0
         |
         [1-9][0-9]{0,2}(?:[ ,.][0-9]{3})+  # with thousand separators
         |
@@ -280,7 +280,7 @@ class LanguageSpecificData:
     word = ur"(?:(?![\d])[-\u2010\w])+"
     word_re = re.compile(word, re.UNICODE)
 
-
+@lineprofile
 def tokenise(text, lsd=LanguageSpecificData(), glue=GLUE_TAG):
     re_list = [
         SGML_TAG_RE,
@@ -307,7 +307,7 @@ def tokenise(text, lsd=LanguageSpecificData(), glue=GLUE_TAG):
     text = CONTROL_CHAR_RE.sub("", text)    # remove control chars
     text = replace_html_entities(text)
     text = SPACE_RE.sub(" ", text)          # replace special spaces with normal space
-    
+
     tokens = tokenise_recursively(text, re_list)
 
     # replace &lt; &gt; and &quot;
@@ -319,9 +319,10 @@ def tokenise(text, lsd=LanguageSpecificData(), glue=GLUE_TAG):
         else:
             tmp_tokens.append(t)
     tokens = tmp_tokens
-    
+
     # replace newlines with spaces
-    tokens = [re.sub("[\r\n]", " ", t) for t in tokens]
+    comp = re.compile("[\r\n]")
+    tokens = [comp.sub(" ", t) for t in tokens]
 
     glued_tokens = []
     should_add_glue = False
@@ -403,7 +404,7 @@ class FrenchData(LanguageSpecificData):
                     [-\u2010]t[-\u2010]on | [-\u2010]ce | [-\u2010]elles? |
                     [-\u2010]ils? | [-\u2010]je | [-\u2010]la | [-\u2010]les? |
                     [-\u2010]leur | [-\u2010]lui | [-\u2010]m\u00eames? |
-                    [-\u2010]m['\u2019] | [-\u2010]moi | [-\u2010]nous | 
+                    [-\u2010]m['\u2019] | [-\u2010]moi | [-\u2010]nous |
                     [-\u2010]on | [-\u2010]toi | [-\u2010]tu |
                     [-\u2010]t['\u2019] | [-\u2010]vous | [-\u2010]en |
                     [-\u2010]y | [-\u2010]ci | [-\u2010]l\u00e0
@@ -540,6 +541,7 @@ např\.|mudr\.|abl\.|absol\.|adj\.|adv\.|ak\.|ak\. sl\.|alch\.|amer\.|anat\.|ang
 
 class HindiData(LanguageSpecificData):
     '''Siva Reddy'''
+    @lineprofile
     def __init__(self):
         # Devanagari script = \u0900-\u097f
         self.word = u"([-\u2010\u0900-\u0963\u0966-\u097f\w])+"
@@ -597,7 +599,7 @@ Tokenize the FILES or standard input.
                         WARNING: splits SGML tags if on multiple lines
   -q, --quiet           no warnings
   -h, --help
-  
+
 Description:
 - splits input text into tokens (one token per line)
 - for specified languages recognizes abbreviations and clictics (such as 've
@@ -607,6 +609,7 @@ Description:
 - recognizes URLs, e-mail addreses, DNS domains, IP addresses
 - adds glue (<g/>) tags between tokens not separated by space
 - the output can be tagged with the TreeTagger part-of-speech tagger"""
+
 
 def main(*args):
     import codecs
