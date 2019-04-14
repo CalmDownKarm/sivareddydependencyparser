@@ -1,4 +1,3 @@
-from builtins import str
 import sys
 f = open(sys.argv[1],'r');
 sents = f.read().split('\n</s>\n<s>\n');

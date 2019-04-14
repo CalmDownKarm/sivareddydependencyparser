@@ -17,17 +17,12 @@ http://jrgraphix.net/r/Unicode/
 (c) 2009 Jan Pomikalek <jan.pomikalek@gmail.com>
 """
 from __future__ import print_function
-from future import standard_library
-standard_library.install_aliases()
-from builtins import chr
-from builtins import str
-from builtins import object
 from gramex.debug import lineprofile
 import re
 
 # regular expressions
 # mostly taken from http://www.limsi.fr/Individu/pointal/python/treetaggerwrapper.py
-SGML_TAG = r"""
+SGML_TAG = ur"""
     (?:                         # make enclosing parantheses non-grouping
     <!-- .*? -->                # XML/SGML comment
     |                           # -- OR --
@@ -228,20 +223,20 @@ HTMLENTITY_RE = re.compile(HTMLENTITY)
 GLUE_TAG = u'<g/>'
 
 def htmlent2unicode(htmlent, dont_convert=[]):
-    import html.entities
+    import htmlentitydefs
     m = re.match("^&#([0-9]+);$", htmlent)
     if m:
-        return chr(int(m.group(1)))
+        return unichr(int(m.group(1)))
     m = re.match("^&#x([0-9]+);$", htmlent)
     if m:
-        return chr(int(m.group(1), 16))
+        return unichr(int(m.group(1), 16))
     m = re.match("^&(\w+);$", htmlent)
     if m:
         name = m.group(1)
         if name in dont_convert:
             return htmlent
-        if name in html.entities.name2codepoint:
-            return chr(html.entities.name2codepoint[name])
+        if name in htmlentitydefs.name2codepoint:
+            return unichr(htmlentitydefs.name2codepoint[name])
         else:
             # return entities with unknown names unchanged
             return htmlent
@@ -275,7 +270,7 @@ def tokenise_recursively(text, re_list, depth=0):
             pos = endpos
     return tokens
 
-class LanguageSpecificData(object):
+class LanguageSpecificData:
     clictics = None
     abbreviations = re.compile(ur"""
 (?<!\w)     # should not be preceded by a letter
@@ -642,7 +637,7 @@ def main(*args):
             language = a.lower()
             if language not in LANGUAGE_DATA:
                 print("unsupported language: %s" % a, file=sys.stderr)
-                print("supported languages: %s" % ", ".join(list(LANGUAGE_DATA.keys())), file=sys.stderr)
+                print("supported languages: %s" % ", ".join(LANGUAGE_DATA.keys()), file=sys.stderr)
                 print(file=sys.stderr)
                 print(usage(), file=sys.stderr)
                 sys.exit(2)
@@ -687,12 +682,12 @@ def main(*args):
                 first_line = True
                 for (lineno0, line) in enumerate(fp):
                     try:
-                        uline = str(line, encoding)
+                        uline = unicode(line, encoding)
                     except UnicodeDecodeError as detail:
                         if not quiet:
                             print("warning: %s, line %i: %s" % (
                                     fp_desc, lineno0+1, str(detail)), file=sys.stderr)
-                        uline = str(line, encoding, 'replace')
+                        uline = unicode(line, encoding, 'replace')
                     tokens = tokenise(uline, lsd, glue)
                     if not first_line:
                         tokens.insert(0, u"") # force starting newline
@@ -701,11 +696,11 @@ def main(*args):
             else:
                 data = fp.read()
                 try:
-                    udata = str(data, encoding)
+                    udata = unicode(data, encoding)
                 except UnicodeDecodeError as detail:
                     if not quiet:
                         print("warning: %s: %s" % (fp_desc, str(detail)), file=sys.stderr)
-                    udata = str(data, encoding, 'replace')
+                    udata = unicode(data, encoding, 'replace')
                 tokens = tokenise(udata, lsd, glue)
                 sys.stdout.write(u"\n".join(tokens).encode(encoding, 'replace'))
         finally:

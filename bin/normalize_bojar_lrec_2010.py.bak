@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-from builtins import chr
-from builtins import range
 import sys
 
 vowels_to_be_replaced= {}
 
 def replace_null(from_chr_num, to_chr_num):
     for x in range(from_chr_num, to_chr_num):
-        vowels_to_be_replaced[chr(x)]= ""
+        vowels_to_be_replaced[unichr(x)]= ""
 
 #replace_null(0x0900, 0x0904)
 #replace_null(0x093A, 0x0950)
@@ -15,7 +13,7 @@ def replace_null(from_chr_num, to_chr_num):
 #replace_null(0x0962, 0x0964)
 #replace_null(0x0971, 0x0972)
 
-vowels_to_be_replaced[chr(0x0901)]= chr(0x0902)
+vowels_to_be_replaced[unichr(0x0901)]= unichr(0x0902)
 vowels_to_be_replaced[u""]= u"न"
 vowels_to_be_replaced[u"ऩ"]= u"न"
 vowels_to_be_replaced[u'ऱ']= u"र"

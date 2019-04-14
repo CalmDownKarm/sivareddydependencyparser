@@ -9,17 +9,15 @@ python merge.py file1 file2 1.1 1.2 2.1 2.3
 
 '''
 
-from future import standard_library
-standard_library.install_aliases()
 import sys
-import subprocess
+import commands
 
 if len(sys.argv)<4:
 	print "Usage: python merge.py file1 file2 1.1 1.2 2.1 2.3"
 	exit()
 
-count1= int(subprocess.getoutput("wc -l %s" %(sys.argv[1])).split()[0])
-count2= int(subprocess.getoutput("wc -l %s" %(sys.argv[2])).split()[0])
+count1= int(commands.getoutput("wc -l %s" %(sys.argv[1])).split()[0])
+count2= int(commands.getoutput("wc -l %s" %(sys.argv[2])).split()[0])
 
 file1= open(sys.argv[1])
 file2= open(sys.argv[2])
