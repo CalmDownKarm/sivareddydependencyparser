@@ -1,4 +1,5 @@
-SGML_TAG = r"""
+import re
+SGML_TAG = re.compile(r"""
     (?:                         # make enclosing parantheses non-grouping
     <!-- .*? -->                # XML/SGML comment
     |                           # -- OR --
@@ -11,10 +12,10 @@ SGML_TAG = r"""
     /?                          # Forward slash at the end of singleton tags
     \s*                         # More spaces at the end
     >                           # +End of tag/directive
-    )"""
-SGML_END_TAG = r"</(?!\d)\w[-\.:\w]*>"
-IP_ADDRESS = r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
-DNS_HOST = r"""
+    )""", re.UNICODE | re.VERBOSE | re.DOTALL)
+SGML_END_TAG = re.compile(r"</(?!\d)\w[-\.:\w]*>", re.UNICODE)
+IP_ADDRESS = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
+DNS_HOST = re.compile(r"""
     (?:
         [-a-z0-9]+\.                # Host name
         (?:[-a-z0-9]+\.)*           # Intermediate domains
@@ -59,8 +60,8 @@ DNS_HOST = r"""
         |
 
         localhost
-    )"""
-URL = r"""
+    )""", re.VERBOSE | re.IGNORECASE)
+URL = re.compile(r"""
     (?:
 
     # Scheme part
@@ -86,9 +87,9 @@ URL = r"""
 
     # Scheme specific extension (optional)
     (?:/[-\w;/?:@=&\$_.+!*'(~#%,]*)?
-"""
-EMAIL = r"[-a-z0-9._']+@" + DNS_HOST
-ACRONYM = r"""
+""", re.VERBOSE | re.IGNORECASE | re.UNICODE)
+EMAIL = re.compile(r"[-a-z0-9._']+@" + DNS_HOST, re.VERBOSE | re.IGNORECASE)
+ACRONYM = re.compile(r"""
     (?<!\w)     # should not be preceded by a letter
     # sequence of single letter followed by . (e.g. U.S.)
     (?:
@@ -101,13 +102,13 @@ ACRONYM = r"""
         (?!\w)              # we don't want any more letters to follow
                             # we only want to match U.S. in U.S.Army (not U.S.A)
     )?
-"""
-CONTROL_CHAR = r"[\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008" \
+""", re.UNICODE | re.VERBOSE)
+CONTROL_CHAR = re.compile(r"[\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008" \
     r"\u000B\u000C\u000D\u000E\u000F\u0010\u0011\u0012\u0013" \
     r"\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C" \
-    r"\u001D\u001E\u001F]"
-MULTICHAR_PUNCTUATION = r"(?:[?!]+|``|'')"
-OPEN_CLOSE_PUNCTUATION = r"""
+    r"\u001D\u001E\u001F]", re.UNICODE)
+MULTICHAR_PUNCTUATION = re.compile(r"(?:[?!]+|``|'')", re.VERBOSE)
+OPEN_CLOSE_PUNCTUATION = re.compile(r"""
     [
         \u00AB \u2018 \u201C \u2039 \u00BB \u2019 \u201D \u203A \u0028 \u005B
         \u007B \u0F3A \u0F3C \u169B \u2045 \u207D \u208D \u2329 \u23B4 \u2768
@@ -124,8 +125,8 @@ OPEN_CLOSE_PUNCTUATION = r"""
         \uFE3A \uFE3C \uFE3E \uFE40 \uFE42 \uFE44 \uFE48 \uFE5A \uFE5C \uFE5E
         \uFF09 \uFF3D \uFF5D \uFF60 \uFF63
     ]
-"""
-PHONE_NUMBER = r"\+?[0-9]+(?:[-\u2012 ][0-9]+)*"
+""", re.UNICODE | re.VERBOSE)
+PHONE_NUMBER = re.compile(r"\+?[0-9]+(?:[-\u2012 ][0-9]+)*", re.UNICODE)
 NUMBER_INTEGER_PART = r"""
     (?:
         0
@@ -153,17 +154,17 @@ NUMBER = r"""
         |
         %(decimal)s
     )""" % {'integer': NUMBER_INTEGER_PART, 'decimal': NUMBER_DECIMAL_PART}
-WHITESPACE = r"\s+"
-SPACE = r"[\u00A0\u1680\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006" \
-    r"\u2007\u2008\u2009\u200A\u202F\u205F\u3000]"
-ANY_SEQUENCE = r"(.)\1*"
-HTMLENTITY = r"&(?:#x?[0-9]+|\w+);"
+NUMBER_RE = re.compile(NUMBER, re.UNICODE | re.VERBOSE)
+WHITESPACE = re.compile(r"\s+")
+SPACE = re.compile(r"[\u00A0\u1680\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006" \
+    r"\u2007\u2008\u2009\u200A\u202F\u205F\u3000]", re.UNICODE)
+ANY_SEQUENCE = re.compile(r"(.)\1*")
+HTMLENTITY = re.compile(r"&(?:#x?[0-9]+|\w+);")
 GLUE_TAG = u'<g/>'
 
 clictics = {
-    # Defaults: None
-    # re.UNICODE | re.VERBOSE | re.IGNORECASE -> English flags
-    'English': r"""
+    'default': None,
+    'English': re.compile(r"""
             (?:
                 (?<=\w)     # only consider clictics preceded by a letter
                 (?:
@@ -177,9 +178,8 @@ clictics = {
                 not
             )
             (?!\w)          # clictics should not be followed by a letter
-            """,
-    # re.UNICODE | re.VERBOSE) French Flags
-    'French': r"""
+            """, re.UNICODE | re.VERBOSE | re.IGNORECASE),
+    'French': re.compile(r"""
             (?:
                 # left clictics
                 (?<!\w)     # should not be preceded by a letter
@@ -204,9 +204,8 @@ clictics = {
                 )
                 (?!w)      # should not be followed by a letter
             )
-            """,
-    # Flags are same as French
-    'Italian': r"""
+            """, re.UNICODE | re.VERBOSE),
+    'Italian': re.compile(r"""
             (?:
                 # left clictics
                 (?<!\w)     # should not be preceded by a letter
@@ -217,34 +216,32 @@ clictics = {
                 ['\u2019]   # apostrophe
                 (?=\w)      # should be followed by a letter
             )
-            """,
-    # UNICODE, VERBOSE, IGNORECASE
-    'Czech': r"""
+            """, re.UNICODE | re.VERBOSE),
+    'Czech': re.compile(r"""
             (?:
                 (?<=\w)     # only consider clictics preceded by a letter
                 -li
             )
             (?!\w)          # clictics should not be followed by a letter
-            """
+            """, re.UNICODE | re.VERBOSE | re.IGNORECASE)
 
 }
 
 word = {
     # use re.UNICODE flag
-    'Hindi': r"([-\u2010\u0900-\u0963\u0966-\u097f\w])+",
-    'default': r"(?:(?![\d])[-\u2010\w])+"
+    'Hindi': re.compile(r"([-\u2010\u0900-\u0963\u0966-\u097f\w])+",re.UNICODE),
+    'default': re.compile(r"(?:(?![\d])[-\u2010\w])+", re.UNICODE)
 }
 
 abbreviations = {
     #  re.IGNORECASE | re.UNICODE | re.VERBOSE
-    'default': r"""
+    'default': re.compile(r"""
     (?<!\w)     # should not be preceded by a letter
     (?:
         co\.|inc\.|ltd\.|dr\.|prof\.|jr\.
     )
-    """,
-    # English Flags -> re.UNICODE | re.VERBOSE
-    'English': r"""
+    """, re.IGNORECASE | re.UNICODE | re.VERBOSE),
+    'English': re.compile(r"""
 (?<!\w)     # should not be preceded by a letter
 (?:
     Adm\.|Ala\.|Ariz\.|Ark\.|Aug\.|Ave\.|Bancorp\.|Bhd\.|Brig\.|
@@ -263,9 +260,8 @@ abbreviations = {
     etc\.|ft\.|i\.e\.|non[-\u2010]U\.S\.|office/dept\.|p\.m\.|
     president[-\u2010]U\.S\.|s\.r\.l\.|v\.|v\.B\.|v\.w\.|vs\.
 )
-""",
-    # French Flags ->re.UNICODE | re.VERBOSE
-    'French': r"""
+""", re.UNICODE | re.VERBOSE),
+    'French': re.compile(r"""
 (?<!\w)     # should not be preceded by a letter
 (?:
     rendez[-\u2010]vous|d['\u2019]abord|d['\u2019]accord|d['\u2019]ailleurs|
@@ -283,16 +279,14 @@ abbreviations = {
     Elles[-\u2010]m\u00eames|Par[-\u2010]ci|Par[-\u2010]l\u00e0
 )
 (?!w)      # should not be followed by a letter
-""",
-    # Italian Flags are same as French
-    'Italian': r"""
+""", re.UNICODE | re.VERBOSE),
+    'Italian': re.compile(r"""
             (?<!\w)     # should not be preceded by a letter
             (?:
                 L\. | Lit\. | art\. | lett\. | n\. | no\. | pagg\. | prot\. | tel\.
             )
-            """,
-    # German flags are same as french
-    'German': r"""
+            """,re.UNICODE | re.VERBOSE),
+    'German': re.compile(r"""
 (?:
     # these can be preceded by a letter
     (?:
@@ -315,9 +309,8 @@ abbreviations = {
         z\.[ ]B\.|zz\.|zzgl\.|zzt\.
     )
 )
-""",
-    # Dutch flags are the same as french
-    'Dutch': r"""
+""",re.UNICODE | re.VERBOSE),
+    'Dutch':re.compile(r"""
 (?:
     # these can be preceded by a letter
     (?:
@@ -341,14 +334,14 @@ abbreviations = {
         resp\.|respekt\.|t\.a\.v\.|t\.o\.v\.|vb\.|w\.
     )
 )
-""",
-    'Spanish': r"""
+""",re.UNICODE | re.VERBOSE),
+    'Spanish': re.compile(r"""
             (?<!\w)     # should not be preceded by a letter
             (?:
                 Ref\. | Vol\. | etc\. | App\. | Rec\.
             )
-            """,
-    'Czech': r"""
+            """,re.UNICODE | re.VERBOSE),
+    'Czech': re.compile(r"""
 (?:
     # these should not be preceded by a letter
     (?<!\w)
@@ -357,8 +350,8 @@ abbreviations = {
 např\.|mudr\.|abl\.|absol\.|adj\.|adv\.|ak\.|ak\. sl\.|alch\.|amer\.|anat\.|angl\.|anglosas\.|archit\.|arg\.|astr\.|astrol\.|att\.|bás\.|belg\.|bibl\.|biol\.|boh\.|bulh\.|círk\.|csl\.|č\.|čes\.|dět\.|dial\.|dór\.|dopr\.|dosl\.|ekon\.|el\.|epic\.|eufem\.|f\.|fam\.|fem\.|fil\.|form\.|fr\.|fut\.|fyz\.|gen\.|geogr\.|geol\.|geom\.|germ\.|hebr\.|herald\.|hist\.|hl\.|hud\.|hut\.|chcsl\.|chem\.|ie\.|imp\.|impf\.|ind\.|indoevr\.|inf\.|instr\.|interj\.|iron\.|it\.|katalán\.|kniž\.|komp\.|konj\.|konkr\.|kř\.|kuch\.|lat\.|lit\.|liturg\.|lok\.|m\.|mat\.|mod\.|ms\.|n\.|náb\.|námoř\.|neklas\.|něm\.|nesklon\.|nom\.|ob\.|obch\.|obyč\.|ojed\.|opt\.|pejor\.|pers\.|pf\.|pl\.|plpf\.|prep\.|předl\.|přivl\.|r\.|rcsl\.|refl\.|reg\.|rkp\.|ř\.|řec\.|s\.|samohl\.|sg\.|sl\.|souhl\.|spec\.|srov\.|stfr\.|střv\.|stsl\.|subj\.|subst\.|superl\.|sv\.|sz\.|táz\.|tech\.|telev\.|teol\.|trans\.|typogr\.|var\.|verb\.|vl\. jm\.|voj\.|vok\.|vůb\.|vulg\.|výtv\.|vztaž\.|zahr\.|zájm\.|zast\.|zejm\.|zeměd\.|zkr\.|zř\.|mj\.|dl\.|atp\.|mgr\.|horn\.|mvdr\.|judr\.|rsdr\.|bc\.|phdr\.|thdr\.|ing\.|aj\.|apod\.|pharmdr\.|pomn\.|ev\.|nprap\.|odp\.|dop\.|pol\.|st\.|stol\.|p\. n\. l\.|před n\. l\.|n\. l\.|př\. kr\.|po kr\.|př\. n\. l\.|odd\.|rndr\.|tzv\.|atd\.|tzn\.|resp\.|tj\.|p\.|br\.|č\. j\.|čj\.|č\. p\.|čp\.|a\. s\.|s\. r\. o\.|spol\. s r\. o\.|p\. o\.|s\. p\.|v\. o\. s\.|k\. s\.|o\. p\. s\.|o\. s\.|v\. r\.|v z\.|ml\.|vč\.|kr\.|mld\.|popř\.|ap\.|event\.|švýc\.|p\. t\.|zvl\.|hor\.|dol\.|plk\.|pplk\.|mjr\.|genmjr\.|genpor\.|kpt\.|npor\.|por\.|ppor\.|prap\.|pprap\.|rtm\.|rtn\.|des\.|svob\.|adm\.|brit\.|býv\.|čín\.|fin\.|chil\.|jap\.|nám\.|niz\.|špan\.|tur\.|bl\.|mga\.|zn\.|říj\.|etnonym\.|b\. k\.|škpt\.|nrtm\.|nstržm\.|stržm\.|genplk\.|šprap\.|št\. prap\.|brig\. gen\.|arm\. gen\.|doc\.|prof\.|csc\.|bca\.|dis\.
     )
 )
-""",
-    'Hindi': r"""
+""",re.UNICODE | re.VERBOSE),
+    'Hindi': re.compile(r"""
 (?<!\w)     # should not be preceded by a letter
 (?:
     Adm\.|Ala\.|Ariz\.|Ark\.|Aug\.|Ave\.|Bancorp\.|Bhd\.|Brig\.|
@@ -377,7 +370,7 @@ např\.|mudr\.|abl\.|absol\.|adj\.|adv\.|ak\.|ak\. sl\.|alch\.|amer\.|anat\.|ang
     etc\.|ft\.|i\.e\.|non[-\u2010]U\.S\.|office/dept\.|p\.m\.|
     president[-\u2010]U\.S\.|s\.r\.l\.|v\.|v\.B\.|v\.w\.|vs\.|डाॅ\.|श्री\.|सुश्री\.|श्रीमती\.|कि.मी.
 )
-"""
+""", re.UNICODE | re.VERBOSE)
 
 }
 
