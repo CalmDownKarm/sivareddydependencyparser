@@ -1,12 +1,24 @@
 import regex_strings as rs
 import html
 
-def tokenise_recursively(data, re_list):
-
-    return ...
-
-def replace_html_entities(data):
-    return ...
+def tokenise_recursively(text, re_list, depth=0):
+    if depth >= len(re_list):
+        return [text]
+    regular_expr = re_list[depth]
+    tokens = []
+    pos = 0
+    while pos < len(text):
+        m = regular_expr.search(text, pos)
+        if not m:
+            tokens.extend(tokenise_recursively(text[pos:], re_list, depth+1))
+            break
+        else:
+            startpos, endpos = m.span()
+            if startpos > pos:
+                tokens.extend(tokenise_recursively(text[pos:startpos], re_list, depth+1))
+            tokens.append(text[startpos:endpos])
+            pos = endpos
+    return tokens
 
 def tokenise(data, lsd, glue):
     '''
@@ -25,9 +37,31 @@ def tokenise(data, lsd, glue):
                 rs.HTMLENTITY, rs.NUMBER_RE, rs.ACRONYM, rs.MULTICHAR_PUNCTUATION,
                 rs.OPEN_CLOSE_PUNCTUATION, rs.ANY_SEQUENCE, word]
     data = rs.CONTROL_CHAR.sub('', data)
-    data = [html.unescape(str_) for str_ in data]
+    data = [html.unescape(str_) for str_ in data] # Remove HTML Entities can be replaced
     data = rs.SPACE.sub(' ',data)
     tokens = tokenise_recursively(data, re_list)
+    tokens = [' '.join(t.split('\n')) for t in tokens]
+    glued_tokens = []
+    should_add_glue = False
+    for token in tokens:
+        if rs.WHITESPACE.match(token):
+            should_add_glue = False
+        elif rs.SGML_END_TAG.match(token):
+            glued_tokens.append(token)
+        elif rs.SGML_TAG.match(token):
+            if should_add_glue and glue is not None:
+                glued_tokens.append(glue)
+            glued_tokens.append(token)
+            should_add_glue = False
+        else:
+            if should_add_glue and glue is not None:
+                glued_tokens.append(glue)
+            glued_tokens.append(token)
+            should_add_glue = True
+
+    return glued_tokens
+
+
 
 def run_tokenize(data, language='English', encoding='utf-8', glue='<g/>', stream=False, quiet=False):
     '''
