@@ -36,34 +36,18 @@ def tokenise(data, lsd, glue):
     re_list += [rs.WHITESPACE, rs.URL, rs.EMAIL, rs.IP_ADDRESS,
                 rs.HTMLENTITY, rs.NUMBER_RE, rs.ACRONYM, rs.MULTICHAR_PUNCTUATION,
                 rs.OPEN_CLOSE_PUNCTUATION, rs.ANY_SEQUENCE, word]
-    data = rs.CONTROL_CHAR.sub('', data)
-    data = [html.unescape(str_) for str_ in data] # Remove HTML Entities can be replaced
-    data = rs.SPACE.sub(' ',data)
+    data = html.unescape(data) # Remove HTML Entities can be replaced
+    for regex, expression in [(rs.CONTROL_CHAR, ''), (rs.SPACE, ' ')]:
+        data = regex.sub(expression, data)
+    import re
+    data = re.sub(r'।\s+|।|\'|,|‘', ' ', data)
     tokens = tokenise_recursively(data, re_list)
-    tokens = [' '.join(t.split('\n')) for t in tokens]
-    glued_tokens = []
-    should_add_glue = False
-    for token in tokens:
-        if rs.WHITESPACE.match(token):
-            should_add_glue = False
-        elif rs.SGML_END_TAG.match(token):
-            glued_tokens.append(token)
-        elif rs.SGML_TAG.match(token):
-            if should_add_glue and glue is not None:
-                glued_tokens.append(glue)
-            glued_tokens.append(token)
-            should_add_glue = False
-        else:
-            if should_add_glue and glue is not None:
-                glued_tokens.append(glue)
-            glued_tokens.append(token)
-            should_add_glue = True
-
-    return glued_tokens
+    return ''.join(tokens).split(' ')
+    # Dataset doesn't have SGML tags for now, so ignoring all the glue tag stuff
 
 
 
-def run_tokenize(data, language='English', encoding='utf-8', glue='<g/>', stream=False, quiet=False):
+def run_tokenize(data, language='English', encoding='utf-8', stream=False, quiet=False):
     '''
     passed a language, an encoding, and some text runs the tokenizer
     :param language: string, language of the text
@@ -76,5 +60,6 @@ def run_tokenize(data, language='English', encoding='utf-8', glue='<g/>', stream
     lsd = [dict_.get(language, dict_.get('default'))
            for dict_ in [rs.clictics, rs.abbreviations, rs.word]]
     # lsd = LanguageData()
-    tokens = '\n'.join(tokenise(data, lsd, glue))
+    tokens = tokenise(data, lsd)
+    # tokens = '\n'.join(tokenise(data, lsd, glue))
     return tokens

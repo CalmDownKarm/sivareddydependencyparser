@@ -11,7 +11,6 @@ http://www.limsi.fr/Individu/pointal/python/treetaggerwrapper.py
 Lists of clictics and abbreviations were taken from the TreeTagger:
 http://www.ims.uni-stuttgart.de/projekte/corplex/TreeTagger/
 
-Unicode table by script:
 http://jrgraphix.net/r/Unicode/
 
 (c) 2009 Jan Pomikalek <jan.pomikalek@gmail.com>

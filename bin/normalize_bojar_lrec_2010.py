@@ -32,15 +32,21 @@ vowels_to_be_replaced[u'ॠ']= u"ऋ"
 vowels_to_be_replaced[u'ॡ']= u"ऌ"
 
 def normalise(word):
+    '''
+    normalizes unicode word
+    तृष्णा -> तृष्णा
+    भागता -> भागता
+    '''
+
     # Word should be unicode encoding
     nword=""
     for chr in word:
-        if vowels_to_be_replaced.has_key(chr):
+        if chr in vowels_to_be_replaced.keys():
             nword+= vowels_to_be_replaced[chr]
         else:
             nword+= chr
     return nword
 
 if __name__=="__main__":
-    print normalise(u"भागता")
-    print normalise(u"तृष्णा")            
+    print(normalise(u"तृष्णा"))
+    print(normalise(u"भागता"))

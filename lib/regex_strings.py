@@ -14,8 +14,9 @@ SGML_TAG = re.compile(r"""
     >                           # +End of tag/directive
     )""", re.UNICODE | re.VERBOSE | re.DOTALL)
 SGML_END_TAG = re.compile(r"</(?!\d)\w[-\.:\w]*>", re.UNICODE)
-IP_ADDRESS = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
-DNS_HOST = re.compile(r"""
+IP_ADDRESS_STR = r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
+IP_ADDRESS = re.compile(IP_ADDRESS_STR)
+DNS_HOST_STR = r"""
     (?:
         [-a-z0-9]+\.                # Host name
         (?:[-a-z0-9]+\.)*           # Intermediate domains
@@ -60,7 +61,8 @@ DNS_HOST = re.compile(r"""
         |
 
         localhost
-    )""", re.VERBOSE | re.IGNORECASE)
+    )"""
+DNS_HOST = re.compile( DNS_HOST_STR, re.VERBOSE | re.IGNORECASE)
 URL = re.compile(r"""
     (?:
 
@@ -77,9 +79,9 @@ URL = re.compile(r"""
 
     # DNS host / IP
     (?:
-        """ + DNS_HOST + """
+        """ + DNS_HOST_STR + """
         |
-        """ + IP_ADDRESS + """
+        """ + IP_ADDRESS_STR + """
     )
 
     # Port specification (optional)
@@ -88,7 +90,7 @@ URL = re.compile(r"""
     # Scheme specific extension (optional)
     (?:/[-\w;/?:@=&\$_.+!*'(~#%,]*)?
 """, re.VERBOSE | re.IGNORECASE | re.UNICODE)
-EMAIL = re.compile(r"[-a-z0-9._']+@" + DNS_HOST, re.VERBOSE | re.IGNORECASE)
+EMAIL = re.compile(r"[-a-z0-9._']+@" + DNS_HOST_STR, re.VERBOSE | re.IGNORECASE)
 ACRONYM = re.compile(r"""
     (?<!\w)     # should not be preceded by a letter
     # sequence of single letter followed by . (e.g. U.S.)
