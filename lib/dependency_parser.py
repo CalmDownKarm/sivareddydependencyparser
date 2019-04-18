@@ -1,6 +1,7 @@
 import regex_strings as rs
 import html
 
+
 def tokenise_recursively(text, re_list, depth=0):
     if depth >= len(re_list):
         return [text]
@@ -15,20 +16,22 @@ def tokenise_recursively(text, re_list, depth=0):
         else:
             startpos, endpos = m.span()
             if startpos > pos:
-                tokens.extend(tokenise_recursively(text[pos:startpos], re_list, depth+1))
+                tokens.extend(tokenise_recursively(
+                    text[pos:startpos], re_list, depth+1))
             tokens.append(text[startpos:endpos])
             pos = endpos
     return tokens
 
-def tokenise(data, lsd, glue):
+
+def tokenise(data, language='English'):
     '''
-    Given some text and language data, aggregates a bunch of Regular expressions and runs tokenise_recursively
-    :param data: list of strings to be tokenized
-    :param lsd: list of clictics, abbreviations, word compiled regex objects
-    :param glue: the glue character
+    passed a language, an encoding, and some text runs the tokenizer
+    :param language: string, language of the text
+    returns list of tokens
     '''
+    clictics, abbreviations, word = [dict_.get(language, dict_.get('default'))
+                                     for dict_ in [rs.clictics, rs.abbreviations, rs.word]]
     re_list = [rs.SGML_TAG]
-    clictics, abbreviations, word = lsd
     if abbreviations:
         re_list += [abbreviations]
     if clictics:
@@ -36,30 +39,38 @@ def tokenise(data, lsd, glue):
     re_list += [rs.WHITESPACE, rs.URL, rs.EMAIL, rs.IP_ADDRESS,
                 rs.HTMLENTITY, rs.NUMBER_RE, rs.ACRONYM, rs.MULTICHAR_PUNCTUATION,
                 rs.OPEN_CLOSE_PUNCTUATION, rs.ANY_SEQUENCE, word]
-    data = html.unescape(data) # Remove HTML Entities can be replaced
+    data = html.unescape(data)  # Remove HTML Entities can be replaced
     for regex, expression in [(rs.CONTROL_CHAR, ''), (rs.SPACE, ' ')]:
         data = regex.sub(expression, data)
     import re
     data = re.sub(r'।\s+|।|\'|,|‘', ' ', data)
     tokens = tokenise_recursively(data, re_list)
     return ''.join(tokens).split(' ')
-    # Dataset doesn't have SGML tags for now, so ignoring all the glue tag stuff
 
 
-
-def run_tokenize(data, language='English', encoding='utf-8', stream=False, quiet=False):
+def normalize(tokens):
+    ''' Takes a list of tokens, and normalizes them
+    तृष्णा -> तृष्णा
+    भागता -> भागता
     '''
-    passed a language, an encoding, and some text runs the tokenizer
-    :param language: string, language of the text
-    :param encoding: string, encoding type
-    :param glue: boolean, use glue character
-    :param stream: boolean, not sure
-    returns newline seperated list of tokens
-    '''
-    # no_glue  = False
-    lsd = [dict_.get(language, dict_.get('default'))
-           for dict_ in [rs.clictics, rs.abbreviations, rs.word]]
-    # lsd = LanguageData()
-    tokens = tokenise(data, lsd)
-    # tokens = '\n'.join(tokenise(data, lsd, glue))
-    return tokens
+    vowels_to_replace = {
+        chr(0x0901): chr(0x0902),
+        '': 'न',
+        'ऩ': 'न',
+        'ऱ': 'र',
+        'ऴ': 'ळ',
+        'क़': 'क',
+        'ख़': 'ख',
+        'ग़': 'ग',
+        'ज़': 'ज',
+        'ड़': 'ड',
+        'ढ़': 'ढ',
+        'फ़': 'फ',
+        'य़': 'य',
+        'ॠ': 'ऋ',
+        'ॡ': 'ऌ',
+    }
+    return [map(lambda x: vowels_to_replace.get(x, x), token) for token in tokens]
+
+
+
