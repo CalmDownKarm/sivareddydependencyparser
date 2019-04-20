@@ -74,7 +74,8 @@ def normalize(tokens):
         'ॠ': 'ऋ',
         'ॡ': 'ऌ',
     }
-    return [map(lambda x: vowels_to_replace.get(x, x), token) for token in tokens]
+    return [''.join(map(lambda x: vowels_to_replace.get(x, x), token)) for token in tokens]
+
 
 
 
