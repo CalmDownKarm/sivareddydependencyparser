@@ -1,4 +1,5 @@
 import re
+HINDI_SENTENCE_ENDS = re.compile(r'।\s+|।')
 SGML_TAG = re.compile(r"""
     (?:                         # make enclosing parantheses non-grouping
     <!-- .*? -->                # XML/SGML comment

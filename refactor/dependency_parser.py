@@ -26,6 +26,9 @@ def tokenise_recursively(text, re_list, depth=0):
 def tokenise(data, language='English'):
     '''
     passed a language, an encoding, and some text runs the tokenizer
+    :param data: string, assumes a single sentence of text.
+    if it sees a । followed by 1 or more whitespaces, it adds a fullstop and a </s><s> tag.
+    Depending on how these sentences chain together, could change the </s><s> combination.
     :param language: string, language of the text
     returns list of tokens
     '''
@@ -42,10 +45,11 @@ def tokenise(data, language='English'):
     data = html.unescape(data)  # Remove HTML Entities can be replaced
     for regex, expression in [(rs.CONTROL_CHAR, ''), (rs.SPACE, ' ')]:
         data = regex.sub(expression, data)
-    import re
-    data = re.sub(r'।\s+|।|\'|,|‘', ' ', data)
+
+    data = rs.HINDI_SENTENCE_ENDS.sub(' . </s> <s> ', data)
     tokens = tokenise_recursively(data, re_list)
-    return ''.join(tokens).split(' ')
+    return list(filter(None, ''.join(tokens).split(' ')))
+    # return ''.join(tokens).split(' ')
 
 
 def normalize(tokens):
