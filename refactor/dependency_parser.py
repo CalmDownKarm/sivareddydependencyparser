@@ -76,6 +76,23 @@ def normalize(tokens):
     }
     return [''.join(map(lambda x: vowels_to_replace.get(x, x), token)) for token in tokens]
 
+def get_pos_tags(filepath):
+    '''The POS Tagger that Sivareddy uses is a something binary that takes input from files
+    Not sure if it can take input straight from memory
+    :param filepath: contains the filepath of the tokenized and normalized files.
+    relative to hindi-pos-tagger directory
+    '''
+    import os
+    import subprocess
+    args= [
+        './hindi-pos-tagger/bin/tnt',
+        '-v0',
+        '-H',
+        'hindi-pos-tagger/models/hindi',
+        filepath
+    ]
+    sub = subprocess.run(args=args, capture_output=True, cwd=os.path.abspath('..'))
+    return sub.stdout.decode('utf-8').split('\n')
 
 
 
