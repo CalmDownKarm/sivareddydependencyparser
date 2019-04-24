@@ -1,5 +1,6 @@
-import regex_strings as rs
+import re
 import html
+import regex_strings as rs
 
 
 def tokenise_recursively(text, re_list, depth=0):
@@ -92,7 +93,14 @@ def get_pos_tags(filepath):
         filepath
     ]
     sub = subprocess.run(args=args, capture_output=True, cwd=os.path.abspath('..'))
-    return sub.stdout.decode('utf-8').split('\n')
+    tags = sub.stdout.decode('utf-8').split('\n')
+    multi_tabs = re.compile(r'\t+')
+    return [multi_tabs.sub('\t', tokens) for tokens in tags]
+
+def lemmatise():
+    '''given a list of tokens and POS tags, lemmatizes them'''
+    ...
+
 
 
 
