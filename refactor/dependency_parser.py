@@ -1,6 +1,8 @@
+import os
 import re
 import json
 import html
+import subprocess
 import regex_strings as rs
 
 
@@ -85,17 +87,14 @@ def get_pos_tags(filepath):
     :param filepath: contains the filepath of the tokenized and normalized files.
     relative to hindi-pos-tagger directory
     '''
-    import os
-    import subprocess
     args = [
-        './hindi-pos-tagger/bin/tnt',
+        'hindi-pos-tagger/bin/tnt',
         '-v0',
         '-H',
         'hindi-pos-tagger/models/hindi',
         filepath
     ]
-    sub = subprocess.run(args=args, capture_output=True,
-                         cwd=os.path.abspath('..'))
+    sub = subprocess.run(args=args, capture_output=True)
     tags = sub.stdout.decode('utf-8').split('\n')
     multi_tabs = re.compile(r'\t+')
     return [multi_tabs.sub('\t', tokens) for tokens in tags]
@@ -114,39 +113,39 @@ def lemmatise(tagged_tokens, lemma):
 
 
 def lemmatise_helper(line, lemma):
-        line = line.strip()  # Could probably remove this
-        if not line or line.startswith('<'):
+    line = line.strip()  # Could probably remove this
+    if not line or line.startswith('<'):
+        return line
+    else:
+        cols = line.split()
+        if len(cols) != 2:
             return line
         else:
-            cols = line.split()
-            if len(cols) != 2:
-                return line
+            if cols[0] in lemma and cols[1] in lemma[cols[0]]:
+                return "%s\t%s" % (line, lemma[cols[0]][cols[1]])
             else:
-                if cols[0] in lemma and cols[1] in lemma[cols[0]]:
-                    return "%s\t%s" % (line, lemma[cols[0]][cols[1]])
-                else:
-                    return "%s\t%s" % (line, cols[0]+".")
+                return "%s\t%s" % (line, cols[0]+".")
 
 
 def tag2letter(tag):
     if re.match("NEG", tag):
         return "x"
     elif re.match("^[JNV]", tag):
-       return tag[0].lower()
+        return tag[0].lower()
     elif re.match("RB", tag):
-       return "r"
+        return "r"
     elif re.match("PRP", tag):
-       return "d"
+        return "d"
     elif re.match("PSP", tag):
-       return "p"
+        return "p"
     elif re.match("XC", tag):
         return "n"
     elif re.match("CC", tag):
-       return "c"
+        return "c"
     elif re.match("INJ", tag):
-       return "i"
+        return "i"
     else:
-       return "x"
+        return "x"
 
 
 def tag2vert(lemmatized_tokens):
@@ -161,11 +160,12 @@ def tag2vert_helper(line):
         fields = line.split("\t")
         if len(fields) == 3:
             word = fields[0]
-            tag = re.findall(r"^(.*)\.(.*?)\.(.*?)\.(.*?)\.(.*?)\.(.*?)$", fields[1])
+            tag = re.findall(
+                r"^(.*)\.(.*?)\.(.*?)\.(.*?)\.(.*?)\.(.*?)$", fields[1])
             if tag == []:
-               tagSplit = ['UNK', '', '', '', '', '']
+                tagSplit = ['UNK', '', '', '', '', '']
             else:
-               tagSplit = tag[0]
+                tagSplit = tag[0]
             lemma, suffix = re.findall(r"^(.*)\.(.*?)$", fields[2])[0]
             if lemma == "":
                 lemma = word
@@ -174,23 +174,71 @@ def tag2vert_helper(line):
         else:
             return line
 
+
 def modify_pos_tags(vert_tags):
     '''
     I honestly don't know what this function does, or why it's needed, but it's here.
     '''
     return [modify_pos_tags_helper(line) for line in vert_tags]
 
+
 def modify_pos_tags_helper(line):
     if line.startswith('<'):
         return line
-    cols= line[:-1].split('\t')
-    if len(cols)<2:
+    cols = line[:-1].split('\t')
+    if len(cols) < 2:
         return line
     if cols[1] in ["PSP", "CC"]:
-        cols[1]+= ":" + cols[2][:-2]
-    elif cols[1]=="SYM":
-        if cols[0]=="।":
-            cols[1]="."
+        cols[1] += ":" + cols[2][:-2]
+    elif cols[1] == "SYM":
+        if cols[0] == "।":
+            cols[1] = "."
         else:
-            cols[1]= cols[0]
+            cols[1] = cols[0]
     return '\t'.join(cols)
+
+
+def to_conll(listoftokens, filename):
+    '''
+    expects a list of lists - inner list is line.split('\t')[:3] of the modified POS tags
+    writes to a temporary conll file.
+    '''
+    index = 1
+    with open(filename, 'w+') as f:
+        for tokens in listoftokens:
+            if len(tokens) > 2:
+                j = [str(index), tokens[0], tokens[2][:-2], '_',
+                     tokens[1], '_|_|_|_|_', '_', '_', '_', '_']
+                f.write('\t'.join(j)+"\n")
+                index = index + 1
+            else:
+                index = 1
+                f.write("\n")
+
+
+def run_malt_parser(input_filename, jar_path):
+    '''
+    take an input file and a jar path to the malt parser and run from there.
+
+    '''
+    args = [
+        'java',
+        '-jar',
+        jar_path,
+        '-c',
+        'test_complete',
+        '-i',
+        input_filename,
+        '-m',
+        'parse'
+        # java -jar bin/malt.jar -c test_complete -i $@.tmp.tag.conll -o $@.tmp.output -m parse
+    ]
+    sub = subprocess.run(args=args, capture_output=True)
+    return (parse_malt_output_helper(token) for token in sub.stdout.decode('utf-8').split('\n'))
+
+def parse_malt_output_helper(token):
+    list_ = token.split('\t')
+    if len(list_) > 2:
+        return '\t'.join((list_[0], list_[1], list_[2], list_[4], list_[6], list_[7]))
+    else:
+        return ''
