@@ -1,5 +1,7 @@
+from io import open
 import os
 import re
+import sys
 import glob
 import json
 import html
@@ -205,7 +207,7 @@ def to_conll(listoftokens, filename):
     writes to a temporary conll file.
     '''
     index = 1
-    with open(filename, 'w+') as f:
+    with open(filename, 'w+', encoding='utf-8') as f:
         for tokens in listoftokens:
             if len(tokens) > 2:
                 j = [str(index), tokens[0], tokens[2][:-2], '_',
@@ -245,19 +247,22 @@ def parse_malt_output_helper(token):
     else:
         return ''
 
+
 def run_pipe(input_file):
     output_file = input_file + '-parsed'
     ''' Runs everything '''
     # Start doing this
-    with open(input_file) as f:
-        source_text = f.readlines()[:1000]
+    with open(input_file, encoding='utf-8') as f:
+        source_text = f.readlines()
+    remove_starting_num = re.compile(r'^[0-9]+')
+    source_text = [remove_starting_num.sub('', line) for line in source_text]
     tokenized = [normalize(tokenise(x, language='Hindi')) for x in source_text]
     flat = [x for y in tokenized for x in y if x!='\n']
     new_tokens = [pattern.sub(lambda m: rep[re.escape(m.group(0))], text) for text in flat]
     sentence_splits = [tokens.split('\n') for tokens in new_tokens]
     flatten_sentence_splits = [x for y in sentence_splits for x in y if x]
-
-    with open(temporary_tokenized_normalized_filepath, 'w')as f:
+    temporary_tokenized_normalized_filepath = input_file+ '-temp'
+    with open(temporary_tokenized_normalized_filepath, 'w', encoding='utf-8')as f:
         f.writelines((f'{x}\n' for x in flatten_sentence_splits))
 
     for var in [tokenized, flat, new_tokens, sentence_splits, flatten_sentence_splits]:
@@ -268,10 +273,11 @@ def run_pipe(input_file):
     lemma_input = tag2vert(lemma_input)
     lemma_input = modify_pos_tags(lemma_input)
     lemma_input = [token.split('\t')[:3] for token in lemma_input]
-    to_conll(lemma_input, 'temp.conll')
+    temporary_conll_filepath = input_file + '-temp.conll'
+    to_conll(lemma_input, temporary_conll_filepath)
     del lemma_input
     sub = run_malt_parser(temporary_conll_filepath, jarpath)
-    with open(output_file, 'w') as f:
+    with open(output_file, 'w', encoding='utf-8') as f:
         f.writelines((f'{x}\n' for x in sub))
     for file in [temporary_tokenized_normalized_filepath, temporary_conll_filepath]:
         if os.path.exists(file):
@@ -291,11 +297,9 @@ if __name__ == "__main__":
     }
     rep = dict((re.escape(k), v) for k, v in Subs.items())
     pattern = re.compile("|".join(rep.keys()))
-    temporary_tokenized_normalized_filepath = 'temp.txt'
-    temporary_conll_filepath = 'temp.conll'
     jarpath = 'malt.jar'
     multi_tabs = re.compile('\t+')
-    with open('hindi.lemma.json') as lemmafile:
+    with open('hindi.lemma.json', encoding='utf-8') as lemmafile:
         loaded_lemma = json.load(lemmafile)
-    for file_ in glob.glob('*.txt'):
-        run_pipe(file_)
+    input_file = sys.argv[1]
+    run_pipe(input_file)
