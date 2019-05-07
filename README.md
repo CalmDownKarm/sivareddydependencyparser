@@ -1,7 +1,11 @@
-requires openjdk8 also tested on 1.8.0_444 openjdk version "1.8.0_212" OpenJDK Runtime Environment (build 1.8.0_212-8u212-b01-1~deb9u1-b01) OpenJDK 64-Bit Server VM (build 25.212-b01, mixed mode)
+## Notes
+* requires openjdk8 also tested on 1.8.0_444 openjdk version "1.8.0_212" OpenJDK Runtime Environment (build 1.8.0_212-8u212-b01-1~deb9u1-b01) OpenJDK 64-Bit Server VM (build 25.212-b01, mixed mode)
+* run python dependency_parser <filename>
+* might have to modify run_pipe - currently expects the leipzeig corpus format where each sentence has a number at the beginning, so remove that Re if needed. 
+* python 3.7+ can be downgraded to older python versions if you use stdout=stdin=PIPE in the subprocess call instead of capture_output = True
+* currently does not create a mapping of contexts or words, since leipzeig already has a mapping of words.
 
-python 2 currently. eventually will use 2to3 and extract this to a library so it doesn't kill your memory piece by piece.
-
+------original readme--------
 
 Hindi Dependency Parser
 Usage:
